@@ -1,8 +1,7 @@
 #!/usr/bin/python
 
-'''
-    first lab in this course
-'''
+#* Lab01 code by A. Medvedev
+
 import sys
 
 for line in sys.stdin:
