@@ -1,0 +1,6 @@
+-- Third lab A. Medvedev
+
+--Main table creation
+CREATE TABLE alexander.medvedev(UID int, TS string, URL string) 
+    ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+    location '/labs/lab03data/*';
