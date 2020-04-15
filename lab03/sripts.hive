@@ -1,6 +1,45 @@
 -- Third lab A. Medvedev
 
+--beeline connect -n alexander.medvedev -p password
+
 --Main table creation
-CREATE TABLE alexander.medvedev(UID int, TS string, URL string) 
+CREATE TABLE alexander_medvedev(UID bigint, TS float, URL string) 
     ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
-    location '/labs/lab03data/*';
+    --LINES TERMINATED BY '\n'
+    STORED AS TEXTFILE;
+   --location '/user/alexander.medvedev';
+
+--Data loading 
+LOAD DATA INPATH "/labs/lab03data/" INTO TABLE alexander_medvedev;
+--LOAD DATA INPATH "/labs/lab03data/part-00000" INTO TABLE alexander_medvedev;
+
+--Data cleaning
+--SELECT COUNT(*) FROM ALEXANDER_MEDVEDEV WHERE UID IS NULL; --NO SUCH ROWS
+SELECT * FROM alexander_medvedev WHERE UID IS NOT NULL;
+SELECT COUNT(*) FROM ALEXANDER_MEDVEDEV WHERE URL LIKE "https://%" OR URL LIKE "http://%";
+
+--
+SELECT * FROM     
+    (SELECT 
+    TAB_MAIN.UID,
+    TAB2.COUNT_BY COUNT_BY
+    FROM ALEXANDER_MEDVEDEV TAB_MAIN
+    LEFT JOIN     
+        (SELECT 
+            * 
+            FROM 
+                (SELECT 
+                UID,
+                URL, 
+                COUNT(TS) COUNT_BY
+                FROM ALEXANDER_MEDVEDEV  
+                WHERE 
+                URL LIKE "%HTTP://%" 
+                OR URL LIKE "%HTTPS://%"
+                --URL LIKE "http:%"
+                GROUP BY UID, URL) TAB1
+            WHERE TAB1.COUNT_BY > 9
+        )TAB2
+    ON (TAB_MAIN.UID = TAB2.UID)
+WHERE COUNT_BY
+;
