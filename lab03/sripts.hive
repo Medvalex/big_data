@@ -3,14 +3,13 @@
 --beeline connect -n alexander.medvedev -p password
 
 --Main table creation
-CREATE TABLE alexander_medvedev(UID bigint, URL string) w
+CREATE TABLE am_lab03s(UID bigint, URL string) 
     ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
     LINES TERMINATED BY '\n'
     STORED AS TEXTFILE;
-   --location '/user/alexander.medvedev';
 
 --Data loading 
-LOAD DATA INPATH "/user/alexander.medvedev/lab03/result/" INTO TABLE alexander_medvedev;
+LOAD DATA INPATH "/user/alexander.medvedev/lab03s/result/" INTO TABLE am_lab03s;
 
 --creating table with sub-totals for each UID with URLs
 --SELECT DISTINCT UID FROM ALEXANDER_MEDVEDEV
