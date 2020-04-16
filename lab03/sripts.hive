@@ -3,43 +3,80 @@
 --beeline connect -n alexander.medvedev -p password
 
 --Main table creation
-CREATE TABLE alexander_medvedev(UID bigint, TS float, URL string) 
+CREATE TABLE alexander_medvedev(UID bigint, URL string) 
     ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
-    --LINES TERMINATED BY '\n'
+    LINES TERMINATED BY '\n'
     STORED AS TEXTFILE;
    --location '/user/alexander.medvedev';
 
 --Data loading 
-LOAD DATA INPATH "/labs/lab03data/" INTO TABLE alexander_medvedev;
---LOAD DATA INPATH "/labs/lab03data/part-00000" INTO TABLE alexander_medvedev;
+LOAD DATA INPATH "/user/alexander.medvedev/lab03/result/" INTO TABLE alexander_medvedev;
 
---Data cleaning
---SELECT COUNT(*) FROM ALEXANDER_MEDVEDEV WHERE UID IS NULL; --NO SUCH ROWS
-SELECT * FROM alexander_medvedev WHERE UID IS NOT NULL;
-SELECT COUNT(*) FROM ALEXANDER_MEDVEDEV WHERE URL LIKE "https://%" OR URL LIKE "http://%";
+--creating table with sub-totals for each UID with URLs
+--SELECT DISTINCT UID FROM ALEXANDER_MEDVEDEV
+--(SELECT CASE WHENE T2.URL IN ("cars.ru", "avto-russia.ru", "bmwclub.ru")
 
---
-SELECT * FROM     
-    (SELECT 
-    TAB_MAIN.UID,
-    TAB2.COUNT_BY COUNT_BY
-    FROM ALEXANDER_MEDVEDEV TAB_MAIN
-    LEFT JOIN     
-        (SELECT 
-            * 
-            FROM 
-                (SELECT 
-                UID,
-                URL, 
-                COUNT(TS) COUNT_BY
-                FROM ALEXANDER_MEDVEDEV  
-                WHERE 
-                URL LIKE "%HTTP://%" 
-                OR URL LIKE "%HTTPS://%"
-                --URL LIKE "http:%"
-                GROUP BY UID, URL) TAB1
-            WHERE TAB1.COUNT_BY > 9
-        )TAB2
-    ON (TAB_MAIN.UID = TAB2.UID)
-WHERE COUNT_BY
+CREATE TABLE ALEXANDER_MEDVEDEV_SUB_COUNT 
+AS  SELECT UID,URL,COUNT_BY,
+CASE
+    WHEN URL IN ("cars.ru","avto-russia.ru","bmwclub.ru") AND COUNT_BY > 9 THEN 1
+    ELSE 0
+END AS NAME1,
+CASE
+    WHEN URL IN ("zakon.kz", "egov.kz", "makler.md") AND COUNT_BY > 9 THEN 1
+    ELSE 0
+END AS NAME2,
+CASE
+    WHEN URL IN ("russianfood.com", "psychologies.ru", "gotovim.ru") AND COUNT_BY > 9 THEN 1
+    ELSE 0
+END AS NAME3,
+CASE
+    WHEN URL IN ("books.imhonet.ru", "zhurnaly.biz", "zvukobook.ru") AND COUNT_BY > 9 THEN 1
+    ELSE 0
+END AS NAME4
+ FROM (SELECT UID,URL, COUNT(*) COUNT_BY  FROM
+ALEXANDER_MEDVEDEV GROUP BY UID, URL) T1; 
+
+SELECT * FROM (SELECT URL, 
+CASE 
+    WHEN URL in ("cars.ru","avto-russia.ru","bmwclub.ru") THEN "CAT1"
+    ELSE 0
+END AS AUTOSER
+FROM ALEXANDER_MEDVEDEV_SUB_COUNT) T1
+WHERE T1.AUTOSER > 0
+;
+
+CREATE TABLE ALEXANDER_MEDVEDEV_SUB_COUNT_CAT AS SELECT 
+UID,
+URL,
+ CASE 
+    WHEN URL IN ("cars.ru","avto-russia.ru","bmwclub.ru") THEN "CAT1"
+    WHEN URL IN ("zakon.kz", "egov.kz", "makler.md") THEN "CAT2"
+    WHEN URL IN ("russianfood.com", "psychologies.ru", "gotovim.ru") THEN "CAT3"
+    WHEN URL IN ("books.imhonet.ru", "zhurnaly.biz", "zvukobook.ru") THEN "CAT4"
+END AS CATEGORY
+FROM ALEXANDER_MEDVEDEV_SUB_COUNT T1;
+
+SELECT DISTINCT UID,
+CASE
+    WHEN (SELECT COUNT(*) FROM ALEXANDER_MEDVEDEV_SUB_COUNT_CAT T2 WHERE T1.UID = T2.UID AND CATEGORY = "CAT1") > 0 THEN 1
+    ELSE 0
+END AS NAME_1
+FROM ALEXANDER_MEDVEDEV T1;    
+
+SELECT DISTINCT UID 
+LEFT JOIN ALEXANDER_MEDVEDEV_SUB_COUNT
+
+SELECT UID, COUNT(NAME1) FROM ALEXANDER_MEDVEDEV_SUB_COUNT WHERE UID = 311730341;
+
+-- остановился тут
+SELECT DISTINCT ST.UID,T1.COUNT_NAME1, T2.COUNT_NAME2, T3.COUNT_NAME3 T4.COUNT_NAME4 FROM ALEXANDER_MEDVEDEV ST
+LEFT JOIN  (SELECT UID, SUM(NAME1) COUNT_NAME1 FROM ALEXANDER_MEDVEDEV_SUB_COUNT GROUP BY UID) T1 
+ON ST.UID = T1.UID
+LEFT JOIN  (SELECT UID, SUM(NAME2) COUNT_NAME2 FROM ALEXANDER_MEDVEDEV_SUB_COUNT GROUP BY UID) T2 
+ON ST.UID = T2.UID
+LEFT JOIN  (SELECT UID, SUM(NAME3) COUNT_NAME3 FROM ALEXANDER_MEDVEDEV_SUB_COUNT GROUP BY UID) T3 
+ON ST.UID = T3.UID
+LEFT JOIN  (SELECT UID, SUM(NAME4) COUNT_NAME4 FROM ALEXANDER_MEDVEDEV_SUB_COUNT GROUP BY UID) T4 
+ON ST.UID = T4.UID
 ;
