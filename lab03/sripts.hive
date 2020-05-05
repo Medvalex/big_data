@@ -85,19 +85,19 @@ SELECT UID,
 CASE
     WHEN user_cat1_flag > 1 THEN 1
     ELSE user_cat1_flag
-END,
+END user_cat1_flag,
 CASE
     WHEN user_cat2_flag > 1 THEN 1
     ELSE user_cat2_flag
-END,
+END user_cat2_flag,
 CASE
     WHEN user_cat3_flag > 1 THEN 1
     ELSE user_cat3_flag
-END,
+END user_cat3_flag,
 CASE
     WHEN user_cat4_flag > 1 THEN 1
     ELSE user_cat4_flag
-END
+END user_cat4_flag
 FROM ALEXANDER_MEDVEDEV_RES;
 
 INSERT OVERWRITE DIRECTORY 'hdfs://spark-master.newprolab.com:8020/user/alexander.medvedev/lab03result'

@@ -1,3 +1,52 @@
 -- Third super achivment lab A. Medvedev
 
 --beeline connect -n alexander.medvedev -p password
+
+CREATE TABLE am_lab03s(UID bigint, URL string) 
+    ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+    LINES TERMINATED BY '\n'
+    STORED AS TEXTFILE;
+
+--Data loading 
+LOAD DATA INPATH "/user/alexander.medvedev/lab03s/result/" INTO TABLE am_lab03s;
+
+--join with automib user clss
+CREATE TABLE AM_LAB03S_STEP_1 AS SELECT T1.*, T2.user_cat1_flag
+ FROM AM_LAB03S T1
+ LEFT JOIN ALEXANDER_MEDVEDEV_RES_F T2
+ ON (T1.UID = T2.UID)
+ ; 
+
+
+
+CREATE TABLE AM_LAB03S_STEP_2 AS SELECT  
+    T1.URL,
+    T2.LEAD_SUM
+    FROM AM_LAB03S_STEP_1 T1 
+    LEFT JOIN 
+        (SELECT
+            URL,
+            SUM(user_cat1_flag) LEAD_SUM
+            FROM AM_LAB03S_STEP_1
+            GROUP BY URL) T2
+    ON (T1.URL = T2.URL)
+    WHERE T1.USER_CAT1_FLAG = 1;
+
+SELECT COUNT(URL) FROM AM_LAB03S; --17706
+SELECT COUNT(URL) FROM AM_LAB03S_STEP_1 WHERE USER_CAT1_FLAG = 1; --2114
+
+INSERT OVERWRITE DIRECTORY 'hdfs://spark-master.newprolab.com:8020/user/alexander.medvedev/lab03Sresult'
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '\t'
+STORED AS TEXTFILE 
+SELECT 
+distinct URL,
+CAST(((LEAD_SUM/6572876))/((313556/6572876)) as DECIMAL(20,20)) RES
+FROM AM_LAB03S_STEP_2
+order by res desc, url desc;
+
+SELECT 
+distinct URL,
+CAST(((LEAD_SUM/6572876))/((313556/6572876)) as DECIMAL(20,20)) RES
+FROM AM_LAB03S_STEP_2
+order by res desc, url asc;

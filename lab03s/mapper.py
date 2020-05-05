@@ -27,7 +27,8 @@ def url2domain(url):
            b = re.search("(?:www\.)?(.*)",a.netloc).group(1)
            if b is not None:
                 b =str(b).strip()
-                c = re.search("^www.\.|^www\.",b)
+                #c = re.search("^www.\.|^www\.",b)
+                c = re.search("^www\.",b)
                 if c is not None:
                     b = b[len(c.group(0)):] 
                 return b
